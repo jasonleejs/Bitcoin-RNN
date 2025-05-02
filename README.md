@@ -1,0 +1,1 @@
+Define kaggle.json and store in ~/.kaggle/
