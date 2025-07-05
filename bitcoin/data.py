@@ -24,7 +24,7 @@ from config import *
 
 class BitcoinDataset(Dataset):
     
-    def __init__(self, csv_path=CSV_PATH, features=None, target="Close", window_size=100, update=True):
+    def __init__(self, csv_path=CSV_PATH, features=None, target="Close", window_size=3600, update=True):
         super().__init__()
         
         self.csv_path = csv_path
@@ -60,15 +60,22 @@ class BitcoinDataset(Dataset):
         # split into train and temp (val+test)
         train_size = train_ratio
         temp_size = 1.0 - train_size
+        
+        print("Splitting train/test sets...")
         X_train, X_temp, y_train, y_temp = sk_train_test_split(X, y, train_size=train_size, shuffle=False)
 
         if val_ratio > 0:
+            print("Splitting test/validation sets...")
             val_size = val_ratio / temp_size
             X_val, X_test, y_val, y_test = sk_train_test_split(X_temp, y_temp, test_size=1 - val_size, shuffle=False)
         else:
             X_val, y_val = torch.empty(0), torch.empty(0)
             X_test, y_test = X_temp, y_temp
 
+        X_train = torch.tensor(X_train, dtype=torch.float32)
+        X_test = torch.tensor(X_test, dtype=torch.float32)
+        y_train = torch.tensor(y_train, dtype=torch.float32)
+        y_test = torch.tensor(y_test, dtype=torch.float32)
         return (X_train, y_train), (X_val, y_val), (X_test, y_test)
 
     def get_scaler(self):
